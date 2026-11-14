@@ -592,3 +592,13 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 .vezora-pricing-summary>.btn{display:flex;width:100%;background:#e2b974;color:#1b2931;margin-top:16px}
 .vezora-pricing-summary>.btn:hover{background:#f0c67f}
 @media(max-width:740px){.vezora-pricing-grid{grid-template-columns:minmax(0,1fr)}.vezora-pricing-plan,.vezora-pricing-summary{padding:25px 21px}}
+
+/* Profissionais aguardando pagamento proporcional no Vezora */
+.vezora-addon-panel{border:1px solid #d4e3ea;border-radius:16px;padding:20px;background:#f7fbfd;margin:22px 0}
+.vezora-addon-panel h2{font-size:19px;color:#172737;margin:0 0 10px}
+.vezora-addon-panel p{font-size:13px;color:#52697a;line-height:1.65}
+.vezora-addon-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #e3ebef}
+.vezora-addon-row div{display:grid;gap:5px;min-width:0}
+.vezora-addon-row b{color:#173649}
+.vezora-addon-row small{font-size:12px;color:#5a7686}
+@media(max-width:600px){.vezora-addon-row{flex-direction:column;align-items:stretch}.vezora-addon-row button{width:100%}}
