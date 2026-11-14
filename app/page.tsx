@@ -5,6 +5,7 @@ import Brand from '@/components/Brand';
 import MobileNav from '@/components/MobileNav';
 import WhatsAppSupport from '@/components/WhatsAppSupport';
 import {SITE_URL} from '@/lib/seo-server';
+import PricingCalculator,{type PublicPricing} from '@/components/PricingCalculator';
 export const metadata:Metadata={alternates:{canonical:'/'}};
 const features=[
   {Icon:CalendarDays,title:'Agenda sem complicação',desc:'Seu cliente encontra o horário disponível e reserva sozinho, a qualquer hora.'},
@@ -14,7 +15,19 @@ const features=[
   {Icon:Users,title:'Agenda por profissional',desc:'Horários diferentes para cada pessoa da equipe, sem conflitos de agendamento.'},
   {Icon:ShieldCheck,title:'Organização e confiança',desc:'Painel privado, reservas protegidas e histórico de atendimentos.'}
 ];
-export default function Home(){return <main className="site">
+async function loadPricing():Promise<PublicPricing|null>{
+  const backend=process.env.API_INTERNAL_URL?.trim();
+  if(!backend)return null;
+  try{
+   const url=new URL('/api/platform/public-settings',backend);
+   const response=await fetch(url,{next:{revalidate:30},signal:AbortSignal.timeout(5000)});
+   if(!response.ok)return null;
+   const raw=await response.json() as PublicPricing;
+   if(!Number.isSafeInteger(raw.monthlyPriceCents)||raw.monthlyPriceCents<0||!Number.isSafeInteger(raw.additionalProfessionalCents))return null;
+   return raw;
+  }catch{return null;}
+}
+export default async function Home(){const pricing=await loadPricing();return <main className="site">
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify({'@context':'https://schema.org','@graph':[{'@type':'Organization','@id':SITE_URL+'/#organizacao',name:'Vezora',url:SITE_URL+'/',logo:SITE_URL+'/favicon-32x32.png'},{'@type':'WebSite','@id':SITE_URL+'/#website',name:'Vezora',url:SITE_URL+'/',inLanguage:'pt-BR',publisher:{'@id':SITE_URL+'/#organizacao'}}]}).replace(/</g,'\\u003c')}}/>
   <header className="topbar container"><Brand/><nav className="site-nav"><a href="#recursos">Recursos</a><a href="#como-funciona">Como funciona</a><a href="#solucoes">Para quem</a><a href="#planos">Planos</a></nav><div className="nav-actions"><Link prefetch={false} href="/entrar" className="link-login">Entrar</Link><Link prefetch={false} className="btn btn-dark btn-small" href="/cadastro">Experimentar grátis <ArrowRight size={16}/></Link><MobileNav/></div></header>
   <section className="hero container"><div className="hero-copy"><div className="eyebrow"><Sparkles size={14}/> UMA NOVA FORMA DE AGENDAR</div><h1>Seu negócio merece uma <em>agenda inteligente.</em></h1><p>Do corte à manicure, do salão ao estúdio: agendamentos online, profissionais e pagamentos no mesmo lugar. Sua marca sempre em primeiro plano.</p><div className="hero-buttons"><Link prefetch={false} href="/cadastro" className="btn btn-primary">Criar meu espaço <ArrowRight size={19}/></Link><Link href="#como-funciona" className="btn btn-ghost">Ver como funciona</Link></div><div className="hero-hint"><div className="avatars"><span>M</span><span>A</span><span>J</span></div><p>Feito para diferentes profissionais e estilos de atendimento.</p></div></div>
@@ -22,7 +35,7 @@ export default function Home(){return <main className="site">
   <section className="trust-strip"><div className="container trust-grid"><span><Check size={17}/> Para profissionais autônomos</span><span><Check size={17}/> Para estúdios e salões</span><span><Check size={17}/> Para barbearias</span><span><Check size={17}/> Para equipes</span></div></section>
   <section className="section container" id="recursos"><div className="section-heading"><span className="overline">TUDO NO MESMO LUGAR</span><h2>Mais tempo atendendo.<br/><em>Menos tempo organizando.</em></h2><p>O essencial do seu dia a dia, em uma plataforma que trabalha para você.</p></div><div className="feature-grid">{features.map(({Icon,title,desc})=><article className="feature-card" key={title}><div className="feature-icon"><Icon size={23}/></div><h3>{title}</h3><p>{desc}</p></article>)}</div></section>
   <section className="split-section" id="como-funciona"><div className="container split-inner"><div><span className="overline">VOCÊ NO CONTROLE</span><h2>Sua marca na frente.<br/><em>Vezora nos bastidores.</em></h2><p>Cada negócio ganha uma página de reservas personalizada. O cliente vê seu nome, suas cores, seus serviços e escolhe o melhor horário.</p><div className="check-list"><div><Palette size={19}/> Personalize cores, imagens e identidade.</div><div><Clock3 size={19}/> Defina os horários de cada profissional.</div><div><CreditCard size={19}/> Configure o sinal de cada serviço.</div></div><Link prefetch={false} href="/cadastro" className="btn btn-primary">Criar meu espaço <ArrowRight size={18}/></Link></div><div className="split-panel"><div className="theme-preview"><div className="theme-side"><div className="theme-tile pink"/><div className="theme-tile gold"/><div className="theme-tile teal"/><div className="theme-tile lilac"/></div><div className="theme-canvas"><div className="theme-pill">✦ &nbsp; ESPAÇO CENTRAL</div><div className="theme-heading">Seu próximo<br/>horário.</div><div className="theme-line"/><div className="theme-line short"/><div className="theme-button">Agendar horário →</div></div></div></div></div></section>
-  <section className="section container" id="planos"><div className="section-heading"><span className="overline">SEU PRÓXIMO PASSO</span><h2>Comece com o que <em>importa.</em></h2><p>Experimente o Vezora gratuitamente pelo prazo vigente. Depois, continue com uma assinatura mensal por Pix ou cartão.</p></div><div className="launch-card"><div><span className="eyebrow">VERSÃO INICIAL</span><h3>Seu negócio merece essa evolução.</h3><p>Experimente o painel, cadastre serviços e crie sua página com um modelo visual adequado ao seu negócio.</p></div><Link prefetch={false} href="/cadastro" className="btn btn-primary">Experimentar grátis <ArrowRight size={18}/></Link></div></section>
+  <PricingCalculator pricing={pricing}/>
   <section className="section container" id="solucoes"><div className="section-heading"><span className="overline">FEITO PARA SEU NEGÓCIO</span><h2>Seu segmento. Sua agenda.</h2><p>Veja como o Vezora ajuda diferentes profissionais a organizar horários e facilitar as reservas.</p></div><div className="feature-grid">
    <article className="feature-card"><h3>Barbearias</h3><p>Organize cortes, barbas e a agenda de cada barbeiro.</p><Link href="/solucoes/agendamento-para-barbearias">Conhecer solução <ArrowRight size={15}/></Link></article>
    <article className="feature-card"><h3>Manicures e nail designers</h3><p>Atendimentos com durações diferentes, página personalizada e sinal online.</p><Link href="/solucoes/agenda-para-nail-designers">Conhecer solução <ArrowRight size={15}/></Link></article>
