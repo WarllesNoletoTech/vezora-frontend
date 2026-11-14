@@ -58,7 +58,7 @@ export default function Subscription(){
   <div className="subscription-status" role="status"><BadgeCheck size={19}/><div><b>{active?'Assinatura ativa':trial?'Teste grátis em andamento':suspended?'Estabelecimento suspenso':'Assinatura pendente ou vencida'}</b><small>{active?`Vencimento: ${date(state?.subscriptionEndsAt||null)}`:trial?`Teste até ${date(state?.trialEndsAt||null)} · ${state?.daysRemaining} dia(s) restante(s)`:suspended?'Contate a administração do Vezora.':'Escolha Pix ou cartão para continuar.'}</small></div></div>
   <div className="subscription-price"><span>{state?.isFirstMonth?'Primeiro mês da assinatura':'Renovação do plano Vezora'} · {state?.professionalCount??1} profissional(is)</span><strong>{state?.nextPaymentCents?brl(state.nextPaymentCents):'A definir'}</strong><small>Próxima mensalidade normal: {state?brl(state.renewalPriceCents):'—'}. Profissional adicional: {state?brl(state.additionalProfessionalCents):'—'} por mês. O primeiro profissional está incluso.</small></div>
   <div className="signup-trial"><ShieldCheck size={18}/> O Vezora não recebe nem armazena número ou código de segurança do cartão. O pagamento acontece no Mercado Pago.</div>
-  {addons&&addons.pending.length>0&&<section className="vezora-addon-panel">
+  {active&&addons&&addons.pending.length>0&&<section className="vezora-addon-panel">
     <h2>Profissionais aguardando ativação</h2>
     <p>O adicional é proporcional ao período restante até {date(addons.subscriptionEndsAt)}. A renovação futura inclui o valor mensal por profissional ativo.</p>
     {addons.pending.map(pro=><div className="vezora-addon-row" key={pro.id}><div><b>{pro.name}</b><small>Adicional proporcional: {brl(addons.proratedCents)}</small></div>
