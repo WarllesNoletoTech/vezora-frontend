@@ -29,13 +29,13 @@ export default async function LandingPage({params}:Props){
  const breadcrumb={'@context':'https://schema.org','@type':'BreadcrumbList',itemListElement:[{'@type':'ListItem',position:1,name:'Início',item:SITE_URL+'/'},{'@type':'ListItem',position:2,name:info.title,item:canonical}]};
  return <main className="site">
   <script type="application/ld+json" dangerouslySetInnerHTML={{__html:JSON.stringify(breadcrumb).replace(/</g,'\\u003c')}}/>
-  <header className="topbar container"><Brand/><nav className="site-nav"><Link href="/">Início</Link><Link href="/#recursos">Recursos</Link><Link href="/#planos">Teste grátis</Link></nav><div className="nav-actions"><Link href="/entrar" className="link-login">Entrar</Link><Link href="/cadastro" className="btn btn-dark btn-small">Criar espaço <ArrowRight size={16}/></Link></div></header>
+  <header className="topbar container"><Brand/><nav className="site-nav"><Link href="/">Início</Link><Link href="/#recursos">Recursos</Link><Link href="/#planos">Teste grátis</Link></nav><div className="nav-actions"><Link prefetch={false} href="/entrar" className="link-login">Entrar</Link><Link prefetch={false} href="/cadastro" className="btn btn-dark btn-small">Criar espaço <ArrowRight size={16}/></Link></div></header>
   <section className="hero container" style={{minHeight:'auto',paddingTop:76,paddingBottom:65}}>
    <div className="hero-copy" style={{maxWidth:810}}>
     <span className="eyebrow"><CalendarDays size={15}/> VEZORA PARA {info.tag}</span>
     <h1>{info.heading}</h1>
     <p>{info.lead}</p>
-    <div className="hero-buttons"><Link href="/cadastro" className="btn btn-primary">Experimentar o Vezora <ArrowRight size={18}/></Link><Link href="/#como-funciona" className="btn btn-ghost">Conhecer recursos</Link></div>
+    <div className="hero-buttons"><Link prefetch={false} href="/cadastro" className="btn btn-primary">Experimentar o Vezora <ArrowRight size={18}/></Link><Link href="/#como-funciona" className="btn btn-ghost">Conhecer recursos</Link></div>
    </div>
   </section>
   <section className="section container">
@@ -45,7 +45,7 @@ export default async function LandingPage({params}:Props){
   <section className="split-section"><div className="container" style={{paddingTop:58,paddingBottom:58}}>
    <div className="section-heading"><span className="overline">COMO COMEÇAR</span><h2>Três passos para começar.</h2></div>
    <ol style={{display:'grid',gap:20,maxWidth:780,margin:'25px auto',paddingLeft:26}}>{info.steps.map(step=><li key={step} style={{lineHeight:1.7}}>{step}</li>)}</ol>
-   <div style={{textAlign:'center'}}><Link href="/cadastro" className="btn btn-primary">Criar meu espaço <ArrowRight size={18}/></Link></div>
+   <div style={{textAlign:'center'}}><Link prefetch={false} href="/cadastro" className="btn btn-primary">Criar meu espaço <ArrowRight size={18}/></Link></div>
   </div></section>
   <section className="section container">
    <div className="section-heading"><span className="overline">DÚVIDAS FREQUENTES</span><h2>Antes de começar.</h2></div>
