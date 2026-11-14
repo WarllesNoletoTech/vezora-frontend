@@ -561,3 +561,34 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
 @media(max-width:600px){.vezora-image-upload{padding:12px}.vezora-image-preview.cover{height:140px}}
 
 .vezora-push-reenable{border:1px solid #d6e6ed;background:#f5fbff;border-radius:11px;padding:12px;margin-bottom:16px}.vezora-push-reenable:before{content:'Configure as notificações neste dispositivo';display:block;font-size:12px;font-weight:700;margin-bottom:8px;color:#284e62}
+
+/* Planos do Vezora: preços vindos do painel administrativo */
+.vezora-pricing-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;max-width:960px;margin:30px auto 0;align-items:stretch}
+.vezora-pricing-plan,.vezora-pricing-summary{border:1px solid #e5e9ed;border-radius:22px;padding:34px;background:#fff;box-shadow:0 8px 36px #141f2a0d}
+.vezora-pricing-plan h3{font-size:25px;line-height:1.25;margin:14px 0 8px;color:#172737}
+.vezora-pricing-plan p,.vezora-pricing-summary p{color:#607184;font-size:14px;line-height:1.7}
+.vezora-pricing-eyebrow{color:#136b85;display:inline-flex;align-items:center;gap:8px;font-weight:800;letter-spacing:.08em;font-size:11px}
+.vezora-count-picker{display:inline-flex;align-items:center;gap:27px;background:#f4f9fb;border-radius:14px;padding:8px;margin:14px 0}
+.vezora-count-picker button{width:43px;height:43px;border-radius:11px;background:#fff;border:1px solid #dbe7ed;color:#124e64;display:grid;place-items:center}
+.vezora-count-picker button:disabled{opacity:.35}
+.vezora-count-picker strong{font-family:var(--font-manrope),Arial,sans-serif;font-size:27px;min-width:28px;text-align:center;color:#172737}
+.vezora-pricing-plan>small{display:block;font-size:12px;color:#627485}
+.vezora-pricing-benefits{list-style:none;margin:26px 0 0;padding:0;display:grid;gap:13px}
+.vezora-pricing-benefits li{display:flex;gap:10px;align-items:flex-start;color:#263d4b;font-size:13px}
+.vezora-pricing-benefits svg{color:#087e71;flex-shrink:0}
+.vezora-pricing-summary{background:linear-gradient(145deg,#172737,#22495a);color:#fff}
+.vezora-pricing-summary .vezora-pricing-eyebrow{color:#a9dbec}
+.vezora-pricing-summary .vezora-price-main{margin-top:26px;display:grid;gap:6px}
+.vezora-price-main span,.vezora-price-renewal span{font-size:14px;color:#d0e2e9}
+.vezora-price-main strong{display:block;font-size:clamp(35px,4vw,49px);line-height:1.15;letter-spacing:-.04em}
+.vezora-price-renewal{display:grid;gap:6px;margin:24px 0}
+.vezora-price-renewal strong{font-size:24px}
+.vezora-price-renewal strong small{font-size:13px;font-weight:500}
+.vezora-pricing-lines{display:grid;gap:12px;border-top:1px solid #ffffff38;border-bottom:1px solid #ffffff38;padding:16px 0}
+.vezora-pricing-lines>div{display:flex;justify-content:space-between;gap:14px;font-size:12px}
+.vezora-pricing-lines span{color:#d1e1e8}
+.vezora-pricing-summary p{color:#d1e1e8;font-size:12px;margin:15px 0}
+.vezora-pricing-summary .vezora-pricing-trial{display:inline-block;background:#ffffff16;border-radius:9px;padding:9px 12px;font-weight:700}
+.vezora-pricing-summary>.btn{display:flex;width:100%;background:#e2b974;color:#1b2931;margin-top:16px}
+.vezora-pricing-summary>.btn:hover{background:#f0c67f}
+@media(max-width:740px){.vezora-pricing-grid{grid-template-columns:minmax(0,1fr)}.vezora-pricing-plan,.vezora-pricing-summary{padding:25px 21px}}
