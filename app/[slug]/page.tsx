@@ -31,7 +31,7 @@ export default async function PublicPage({params}:Props){
  const canonical=SITE_URL+'/'+encodeURIComponent(t.slug);
  const data={
   '@context':'https://schema.org',
-  '@type':t.businessType==='BARBEARIA'||t.businessType==='CABELEIREIRO'?'HairSalon':'BeautySalon',
+  '@type':t.businessType==='BARBEARIA'||t.businessType==='CABELEIREIRO'?'HairSalon': ['SALAO_BELEZA','NAIL_DESIGNER','MANICURE_PEDICURE','LASH_DESIGNER','SOBRANCELHAS','ESTETICA','MAQUIAGEM','DEPILACAO'].includes(t.businessType||'')?'BeautySalon':'LocalBusiness',
   '@id':canonical+'#estabelecimento',
   name:t.name,url:canonical,
   description:metaDescription(t),
