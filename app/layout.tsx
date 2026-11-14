@@ -1,6 +1,11 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { DM_Sans, Manrope } from 'next/font/google';
 import './globals.css';
+
+// Hospedagem local de fontes pelo Next.js: evita CSS externo bloqueante.
+const dmSans = DM_Sans({ subsets: ['latin'], display: 'swap', variable: '--font-dm-sans' });
+const manrope = Manrope({ subsets: ['latin'], display: 'swap', variable: '--font-manrope' });
 
 export const metadata: Metadata = {
  metadataBase: new URL('https://vezora-agendamentos.vercel.app'),
@@ -25,5 +30,5 @@ const installEventBridge = `(function(){
   window.addEventListener('appinstalled', function() { window.__vezoraInstallPrompt = null; });
 })();`;
 export default function RootLayout({children}:{children:ReactNode}){
- return <html lang="pt-BR"><head><script dangerouslySetInnerHTML={{__html:installEventBridge}}/></head><body>{children}</body></html>;
+ return <html lang="pt-BR" className={`${dmSans.variable} ${manrope.variable}`}><head><script dangerouslySetInnerHTML={{__html:installEventBridge}}/></head><body>{children}</body></html>;
 }
