@@ -67,7 +67,7 @@ export default function Subscription(){
       </button>
     </div>)}
     <p className="muted">Informe o CPF/CNPJ na opção Pix abaixo para habilitar o pagamento do adicional.</p>
-   </section>
+   </section>}
   {suspended?<div className="alert error">Seu estabelecimento está suspenso. Solicite a liberação ao administrador.</div>:<>
    <div className="payment-methods" role="group" aria-label="Escolha a forma de pagamento">
     <button type="button" className={method==='pix'?'payment-method selected':'payment-method'} onClick={()=>{METHOD('pix');E('');}}><Wallet size={22}/><span><b>Pix</b><small>Pagamento avulso · confirmação automática</small></span></button>
