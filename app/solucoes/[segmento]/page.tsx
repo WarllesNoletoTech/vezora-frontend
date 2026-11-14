@@ -49,6 +49,6 @@ export default async function LandingPage({params}:Props){
    <div style={{maxWidth:820,margin:'0 auto',display:'grid',gap:14}}>{info.faq.map(([question,answer])=><details key={question} className="feature-card"><summary style={{cursor:'pointer',fontWeight:700}}>{question}</summary><p style={{marginTop:12}}>{answer}</p></details>)}</div>
   </section>
   <section className="section container"><div className="section-heading"><span className="overline">OUTRAS SOLUÇÕES</span><h2>Uma agenda para cada tipo de negócio.</h2></div><div style={{display:'flex',flexWrap:'wrap',gap:14,justifyContent:'center'}}>{paths.filter(p=>p!==segmento).map(p=><Link key={p} className="btn btn-outline" href={`/solucoes/${p}`}>{landingPages[p].title}</Link>)}</div></section>
-  <footer className="footer"><div className="container"><Link href="/" aria-label="Página inicial do Vezora"><Brand light/></Link><span>Vezora — Sua marca. Sua agenda.</span></div></footer>
+  <footer className="footer"><div className="container"><Brand light/><span>Vezora — Sua marca. Sua agenda.</span></div></footer>
  </main>;
 }
