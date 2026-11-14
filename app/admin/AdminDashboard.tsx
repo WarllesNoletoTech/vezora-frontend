@@ -21,7 +21,7 @@ type Owner={id:string;name:string;email:string;phone:string;role:'LOJISTA'|'SUPE
 type Paid={id:string;status:string;paymentMethod:string;amountCents:number;createdAt:string;paidAt:string|null;expiresAt:string;tenant:{id:string;name:string;slug:string;owner:{name:string;email:string}}};
 type Log={id:string;actorId:string;action:string;details:string;tenantId:string|null;createdAt:string};
 type Summary={totalTenants:number;totalOwners:number;totalBookings:number;newTenants30:number;monthlyPriceCents:number;receivedTotalCents:number;received30Cents:number;paidPaymentCount:number;statusCounts:Record<string,number>;types:Record<string,number>;latestPayments:{id:string;status:string;amountCents:number;createdAt:string;tenant:{name:string}}[]};
-type Settings={monthlyPriceCents:number;trialDays:number;updatedAt:string;pixConfigured:boolean;paymentIntegrationConfigured:boolean};
+type Settings={monthlyPriceCents:number;firstMonthPriceCents:number|null;additionalProfessionalCents:number;trialDays:number;updatedAt:string;pixConfigured:boolean;paymentIntegrationConfigured:boolean};
 type Tab='overview'|'tenants'|'owners'|'payments'|'finance'|'settings'|'audit';
 type FinanceTotals={completed:number;confirmed:number;cancelled:number;pending:number;other:number;completedRevenueCents:number;collectedCents:number;depositsCents:number;manualCents:number;outstandingCents:number;commissionsCents:number;monthlySalariesCents:number;legacyPriceCount:number;legacyCommissionCount:number;subscriptionReceivedCents:number;subscriptionPaymentCount:number};
 type FinanceTenant=FinanceTotals&{id:string;name:string;slug:string;businessType:string|null;createdAt:string;hasMercadoPago:boolean;owner:{name:string;email:string;phone:string|null}};
@@ -56,6 +56,8 @@ export default function AdminPage(){
  const [busy,B]=useState(false),[loading,L]=useState(false),[error,E]=useState(''),[notice,MSG]=useState('');
  const [summary,S]=useState<Summary|null>(null),[settings,SET]=useState<Settings|null>(null);
  const [price,PRICE]=useState('');
+ const [firstPrice,FIRSTPRICE]=useState('');
+ const [professionalPrice,PROPRICE]=useState('0,00');
  const [trialDays,TRIALDAYS]=useState('3');
  const [tenants,TS]=useState<Page<TenantRow>|null>(null),[owners,US]=useState<Page<Owner>|null>(null),[payments,PS]=useState<Page<Paid>|null>(null),[audits,AS]=useState<Page<Log>|null>(null);
  const [detail,D]=useState<TenantDetail|null>(null);
@@ -89,7 +91,7 @@ export default function AdminPage(){
      void api<FinanceReport>(`/admin/finance/summary?from=${monthStart()}&to=${today()}`).then(x=>{FPERROR(false);FPREVIEW(x&&Array.isArray(x.items)?x:null)}).catch(()=>{FPERROR(true);FPREVIEW(null)});
    }
    if(tab==='finance'){FIN(null);const next=await api<FinanceReport>(`/admin/finance/summary?from=${finFrom}&to=${finTo}${finTenant?'&tenantId='+encodeURIComponent(finTenant):''}`);if(!next||!Array.isArray(next.items))throw new Error('Relatório financeiro retornou formato inválido. Verifique a versão do backend.');FIN(next);if(!finTenant)TENANTOPTS(next.items);}
-   if(tab==='settings'){const x=await api<Settings>('/admin/settings');SET(x);PRICE((x.monthlyPriceCents/100).toFixed(2).replace('.',','));TRIALDAYS(String(x.trialDays??3));}
+   if(tab==='settings'){const x=await api<Settings>('/admin/settings');SET(x);PRICE((x.monthlyPriceCents/100).toFixed(2).replace('.',','));FIRSTPRICE(x.firstMonthPriceCents===null?'':(x.firstMonthPriceCents/100).toFixed(2).replace('.',','));PROPRICE((x.additionalProfessionalCents/100).toFixed(2).replace('.',','));TRIALDAYS(String(x.trialDays??3));}
    if(tab==='tenants'){TS(null);TS(await api<Page<TenantRow>>(`/admin/tenants?page=${page}&search=${encodeURIComponent(appliedSearch)}&businessType=${encodeURIComponent(category)}`));}
    if(tab==='owners')US(await api<Page<Owner>>(`/admin/users?page=${page}&search=${encodeURIComponent(appliedSearch)}`));
    if(tab==='payments')PS(await api<Page<Paid>>(`/admin/payments?page=${page}&status=${payStatus}`));
@@ -134,12 +136,17 @@ export default function AdminPage(){
   void mutation(()=>api(`/admin/tenants/${t.id}/${mode}`,{method:'POST',body:JSON.stringify({days,reason})}),mode==='trial'?'Teste estendido.':'Dias de acesso concedidos (sem receita registrada).');
  }
  function fixPhone(u:Owner){const phone=window.prompt(`Atualizar contato de ${u.name}:`,u.phone);if(phone===null)return;const reason=window.prompt('Justificativa da correção (mínimo 8 caracteres):');if(reason===null)return;void mutation(()=>api(`/admin/users/${u.id}/phone`,{method:'PATCH',body:JSON.stringify({phone,reason})}),'Telefone atualizado.');}
- async function savePrice(){const cents=parseBrlCents(price);const days=Number(trialDays);
- if(cents===null){E('Informe um valor válido: 39,90, 39.90 ou 0,00 para desativar.');return;}
- if(!Number.isInteger(days)||days<0||days>90){E('O teste grátis deve ter entre 0 e 90 dias.');return;}
- if(!window.confirm(`Salvar mensalidade em ${brl(cents)} e período de teste em ${days} dias? A alteração no teste vale para novos cadastros.`))return;
- await mutation(()=>api('/admin/settings',{method:'PATCH',body:JSON.stringify({monthlyPriceCents:cents,trialDays:days})}),'Mensalidade e teste grátis atualizados.');
+ async function savePrice(){
+  const cents=parseBrlCents(price),promo=firstPrice.trim()?parseBrlCents(firstPrice):null,additional=parseBrlCents(professionalPrice),days=Number(trialDays);
+  if(cents===null||additional===null||(firstPrice.trim()&&promo===null)){E('Preencha valores em reais válidos (ex.: 39,90).');return;}
+  if(cents!==0&&cents<100){E('Mensalidade deve ser zero ou ao menos R$ 1,00.');return;}
+  if(promo!==null&&promo<100){E('O primeiro mês deve ser de ao menos R$ 1,00 ou ficar vazio para usar o preço normal.');return;}
+  if(!Number.isInteger(days)||days<0||days>90){E('O teste grátis deve ter entre 0 e 90 dias.');return;}
+  const description=`Renovação: ${brl(cents)}; primeiro mês: ${promo===null?'sem desconto':brl(promo)}; profissional extra: ${brl(additional)} por mês; teste: ${days} dias.`;
+  if(!window.confirm(`Salvar preços?\n${description}\nCobranças já emitidas não serão reescritas.`))return;
+  await mutation(()=>api('/admin/settings',{method:'PATCH',body:JSON.stringify({monthlyPriceCents:cents,firstMonthPriceCents:promo,additionalProfessionalCents:additional,trialDays:days})}),'Preços comerciais atualizados. A página inicial será atualizada após o cache.');
  }
+
  const types=useMemo(()=>businessOptions.reduce<Record<string,string>>((acc,x)=>({...acc,[x.value]:x.label}),{}),[]);
  const segmentPerformance=useMemo(()=>{
   const groups=new Map<string,{type:string;count:number;revenue:number;collected:number}>();
@@ -216,9 +223,25 @@ export default function AdminPage(){
       <div className="ad-info"><ShieldCheck size={18}/><span>Relatório gerencial: os recebimentos registrados podem não representar o extrato bancário. Os salários são referências mensais, não despesas comprovadas. Reservas antigas sem preço ou comissão histórica usam estimativas. Relatórios acima dos limites são recusados para evitar valores parciais.</span></div>
      </>}
     {tab==='settings'&&<>
-      <div className="ad-heading"><div><h2>Configurações comerciais</h2><p>Defina a mensalidade diretamente no painel. O valor é salvo no MongoDB.</p></div></div>
-      <div className="ad-two-panels"><section className="ad-panel ad-settings-card"><div className="ad-panel-heading"><h3>Mensalidade dos lojistas</h3><CreditCard size={22}/></div><label>Valor da assinatura por 30 dias (R$)<input value={price} onChange={e=>PRICE(e.target.value)} inputMode="decimal" placeholder="Ex.: 39,90"/></label><label>Teste grátis para novos lojistas (dias)<input type="number" min="0" max="90" step="1" value={trialDays} onChange={e=>TRIALDAYS(e.target.value)} inputMode="numeric"/></label><p>Use <b>0,00</b> para desativar novas cobranças. O novo teste vale para quem se cadastrar depois da alteração; contas existentes mantêm seus dias concedidos. Cobranças anteriores preservam seus valores.</p><button className="ad-primary" disabled={busy} onClick={()=>void savePrice()}><Check size={17}/>{busy?'Salvando...':'Salvar configurações'}</button></section>
-      <section className="ad-panel ad-settings-card"><div className="ad-panel-heading"><h3>Integração de cobrança</h3><Wallet size={22}/></div><div className="ad-setting-row"><span>Preço configurado</span><strong>{settings?brl(settings.monthlyPriceCents):'—'}</strong></div><div className="ad-setting-row"><span>Teste grátis para novos cadastros</span><strong>{settings?`${settings.trialDays} dias`:'—'}</strong></div><div className="ad-setting-row"><span>Mercado Pago da plataforma</span><strong>{settings?.paymentIntegrationConfigured?'Credenciais preenchidas (não homologadas)':'Aguardando configuração'}</strong></div><div className="ad-setting-row"><span>Emissão de Pix</span><strong>{settings?.pixConfigured?'Pré-requisitos preenchidos':'Indisponível'}</strong></div><p>Credenciais secretas continuam exclusivamente no Heroku. Preço e teste grátis são gerenciados aqui.</p><div className="ad-info"><ShieldCheck size={19}/>O acesso é renovado apenas após pagamento aprovado pelo Mercado Pago ou concessão administrativa auditada.</div></section></div>
+      <div className="ad-heading"><div><h2>Planos e preços do Vezora</h2><p>Os valores publicados na página inicial e usados nas novas cobranças vêm destas configurações.</p></div></div>
+      <div className="ad-two-panels"><section className="ad-panel ad-settings-card"><div className="ad-panel-heading"><h3>Preços da assinatura</h3><CreditCard size={22}/></div>
+        <label>Mensalidade normal, a partir do 2º mês (R$)<input value={price} onChange={e=>PRICE(e.target.value)} inputMode="decimal" placeholder="Ex.: 39,90"/></label>
+        <label>Preço promocional do 1º mês (R$)<input value={firstPrice} onChange={e=>FIRSTPRICE(e.target.value)} inputMode="decimal" placeholder="Deixe vazio para usar preço normal"/></label>
+        <label>Valor mensal de cada profissional adicional (R$)<input value={professionalPrice} onChange={e=>PROPRICE(e.target.value)} inputMode="decimal" placeholder="Ex.: 12,90"/></label>
+        <label>Teste grátis para novos lojistas (dias)<input type="number" min="0" max="90" value={trialDays} onChange={e=>TRIALDAYS(e.target.value)} inputMode="numeric"/></label>
+        <p>O primeiro profissional já está incluído. O segundo e os seguintes têm adicional. Se forem incluídos durante uma assinatura ativa, paga-se proporcionalmente até o vencimento. O primeiro mês promocional é pago via Pix; cartão recorrente usa a mensalidade normal.</p>
+        <button className="ad-primary" disabled={busy} onClick={()=>void savePrice()}><Check size={17}/>{busy?'Salvando...':'Salvar preços'}</button>
+      </section>
+      <section className="ad-panel ad-settings-card"><div className="ad-panel-heading"><h3>Resumo da oferta pública</h3><Wallet size={22}/></div>
+       <div className="ad-setting-row"><span>1º mês, 1 profissional</span><strong>{settings?brl(settings.firstMonthPriceCents??settings.monthlyPriceCents):'—'}</strong></div>
+       <div className="ad-setting-row"><span>Do 2º mês em diante</span><strong>{settings?brl(settings.monthlyPriceCents):'—'}</strong></div>
+       <div className="ad-setting-row"><span>Por profissional adicional / mês</span><strong>{settings?brl(settings.additionalProfessionalCents):'—'}</strong></div>
+       <div className="ad-setting-row"><span>Teste grátis para novos cadastros</span><strong>{settings?`${settings.trialDays} dias`:'—'}</strong></div>
+       <div className="ad-setting-row"><span>Mercado Pago</span><strong>{settings?.paymentIntegrationConfigured?'Credenciais presentes':'Aguardando configuração'}</strong></div>
+       <div className="ad-setting-row"><span>Emissão de Pix</span><strong>{settings?.pixConfigured?'Pré-requisitos preenchidos':'Indisponível'}</strong></div>
+       <p>As novas cobranças usam os preços salvos. Valores já emitidos permanecem os mesmos. Assinaturas recorrentes em cartão dependem de atualização junto ao Mercado Pago.</p>
+       <div className="ad-info"><ShieldCheck size={19}/>As vagas extras só ficam ativas após pagamento aprovado, salvo adicionais abaixo do mínimo de R$ 1,00.</div>
+      </section></div>
      </>}
     {tab==='audit'&&<>
       <div className="ad-heading"><div><h2>Registro de auditoria</h2><p>Histórico de ajustes de preços, suspensões, concessões de acesso e alterações de contato.</p></div></div>
